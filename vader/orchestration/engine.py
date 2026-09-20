@@ -32,54 +32,69 @@ class VaderEngine:
 
     def plan_and_execute(self, user_intent: str) -> Dict[str, Any]:
         self._emit("start", {"prompt": user_intent, "model": getattr(self.provider, "model", "unknown")})
-        self._emit("phase", {"name": "context_indexing", "msg": "Scanning repository symbol graph..."})
-        context_str = self.harness.assemble_context()
+        
+        try:
+            # Step 1: Context Assembly
+            self._emit("phase", {"name": "context_indexing", "msg": "Scanning repository symbol graph..."})
+            context_str = self.harness.assemble_context()
 
-        self._emit("phase", {"name": "planning", "msg": "Architect Agent designing execution graph..."})
-        architect_prompt = f"Context:\n{context_str}\n\nUser Request: {user_intent}\n\nCreate an architectural execution plan."
-        plan_output = self.provider.generate(architect_prompt, system_prompt=ARCHITECT_SYSTEM_PROMPT)
-        self._emit("plan_created", {"plan": plan_output})
+            # Step 2: Architect Agent (Task Planning)
+            self._emit("phase", {"name": "planning", "msg": "Architect Agent designing execution graph..."})
+            architect_prompt = f"Context:\n{context_str}\n\nUser Request: {user_intent}\n\nCreate an architectural execution plan."
+            plan_output = self.provider.generate(architect_prompt, system_prompt=ARCHITECT_SYSTEM_PROMPT)
+            self._emit("plan_created", {"plan": plan_output})
 
-        target_files = []
-        for line in plan_output.splitlines():
-            m = re.search(r"(\b[\w\-./\\]+\.[a-zA-Z0-9]+\b)", line)
-            if m and not line.startswith("CRITICAL") and not line.startswith("VERIFICATION"):
-                f = m.group(1).replace("\\", "/")
-                if f not in target_files and "." in f:
-                    target_files.append(f)
+            # Parse target files from plan
+            target_files = []
+            for line in plan_output.splitlines():
+                m = re.search(r"(\b[\w\-./\\]+\.[a-zA-Z0-9]+\b)", line)
+                if m and not line.startswith("CRITICAL") and not line.startswith("VERIFICATION"):
+                    f = m.group(1).replace("\\", "/")
+                    if f not in target_files and "." in f:
+                        target_files.append(f)
 
-        self._emit("phase", {"name": "coding", "msg": "Coder Agent generating multi-file changes..."})
-        coder_prompt = f"Architect Plan:\n{plan_output}\n\nUser Intent: {user_intent}\n\nContext:\n{self.harness.assemble_context(relevant_files=target_files[:3])}\n\nImplement all requested changes with complete files."
-        code_output = self.provider.generate(coder_prompt, system_prompt=CODER_SYSTEM_PROMPT)
-        applied_files = self._apply_code_blocks(code_output)
-        self._emit("files_written", {"files": applied_files})
+            # Step 3: Coder Agent (Code Generation)
+            self._emit("phase", {"name": "coding", "msg": "Coder Agent generating multi-file changes..."})
+            coder_prompt = f"Architect Plan:\n{plan_output}\n\nUser Intent: {user_intent}\n\nContext:\n{self.harness.assemble_context(relevant_files=target_files[:3])}\n\nImplement all requested changes with complete files."
+            code_output = self.provider.generate(coder_prompt, system_prompt=CODER_SYSTEM_PROMPT)
+            applied_files = self._apply_code_blocks(code_output)
+            self._emit("files_written", {"files": applied_files})
 
-        self._emit("phase", {"name": "verification", "msg": "Testing & self-healing sandbox validation..."})
-        verification_passed, error_log = self._run_sandbox_checks()
-
-        repair_count = 0
-        while not verification_passed and repair_count < self.max_repairs:
-            repair_count += 1
-            self._emit("self_healing", {"iteration": repair_count, "error": error_log[:500]})
-            tester_prompt = f"Test / Lint failure encountered:\nError:\n{error_log}\n\nActive Git Diff:\n{self.harness.get_git_diff()[:2000]}\n\nDiagnose and provide the corrected code for the failing file."
-            repair_output = self.provider.generate(tester_prompt, system_prompt=TESTER_SYSTEM_PROMPT)
-            self._apply_code_blocks(repair_output)
+            # Step 4: Self-Healing Execution Loop (Lint & Test)
+            self._emit("phase", {"name": "verification", "msg": "Testing & self-healing sandbox validation..."})
             verification_passed, error_log = self._run_sandbox_checks()
 
-        self._emit("phase", {"name": "review", "msg": "Reviewer Agent validating security & guardrails..."})
-        review_prompt = f"Review the final diffs:\n{self.harness.get_git_diff()[:3000]}\n\nOriginal Request: {user_intent}"
-        review_output = self.provider.generate(review_prompt, system_prompt=REVIEWER_SYSTEM_PROMPT)
+            repair_count = 0
+            while not verification_passed and repair_count < self.max_repairs:
+                repair_count += 1
+                self._emit("self_healing", {"iteration": repair_count, "error": error_log[:500]})
+                tester_prompt = f"Test / Lint failure encountered:\nError:\n{error_log}\n\nActive Git Diff:\n{self.harness.get_git_diff()[:2000]}\n\nDiagnose and provide the corrected code for the failing file."
+                repair_output = self.provider.generate(tester_prompt, system_prompt=TESTER_SYSTEM_PROMPT)
+                self._apply_code_blocks(repair_output)
+                verification_passed, error_log = self._run_sandbox_checks()
 
-        result = {
-            'success': verification_passed or repair_count < self.max_repairs,
-            'repairs_attempted': repair_count,
-            'modified_files': applied_files,
-            'plan': plan_output,
-            'review': review_output
-        }
-        self._emit("complete", result)
-        return result
+            # Step 5: Reviewer Agent
+            self._emit("phase", {"name": "review", "msg": "Reviewer Agent validating security & guardrails..."})
+            review_prompt = f"Review the final diffs:\n{self.harness.get_git_diff()[:3000]}\n\nOriginal Request: {user_intent}"
+            review_output = self.provider.generate(review_prompt, system_prompt=REVIEWER_SYSTEM_PROMPT)
 
+            result = {
+                'success': verification_passed or repair_count < self.max_repairs,
+                'repairs_attempted': repair_count,
+                'modified_files': applied_files,
+                'plan': plan_output,
+                'review': review_output
+            }
+            self._emit("complete", result)
+            return result
+
+        except Exception as e:
+            self._emit("error", {"msg": str(e)})
+            return {
+                'success': False,
+                'error': str(e),
+                'modified_files': []
+            }
     def _apply_code_blocks(self, text: str) -> List[str]:
         applied = []
         pattern = r'FILE:[ \t]*([^\r\n]+)[\r\n]+```[a-zA-Z0-9_\-]*[\r\n]+(.*?)```'

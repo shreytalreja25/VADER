@@ -9,7 +9,7 @@ LOCAL_CONFIG_FILE = Path(".vader") / "config.json"
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "provider": "ollama",
-    "model": "qwen2.5-coder:7b",
+    "model": "qwen2.5-coder:1.5b",
     "temperature": 0.2,
     "max_tokens": 4096,
     "ollama": {

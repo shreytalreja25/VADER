@@ -54,11 +54,12 @@ def code_cmd(provider, model, prompt):
     else:
         interactive_repl(provider=provider, model=model)
 
-def execute_single_prompt(user_prompt: str, provider: str = None, model: str = None):
+def execute_single_prompt(user_prompt: str, provider: str = None, model: str = None, show_banner: bool = True):
     prov_inst = ProviderManager.get_provider(provider_name=provider, model_name=model)
     model_name = getattr(prov_inst, "model", config_manager.get("model"))
     prov_name = provider or config_manager.get("provider")
-    print_banner(model_name, prov_name)
+    if show_banner:
+        print_banner(model_name, prov_name)
     console.print(f"[bold green]Executing task:[/bold green] {user_prompt}\n")
     
     def on_event(ev, data):
@@ -73,7 +74,12 @@ def execute_single_prompt(user_prompt: str, provider: str = None, model: str = N
         elif ev == "self_healing":
             console.print(f"[yellow]Self-healing iteration {data.get('iteration')} triggered...[/yellow]")
         elif ev == "complete":
-            console.print("[bold green]Task completed successfully![/bold green]")
+            if data.get("success", False):
+                console.print("[bold green]Task completed successfully![/bold green]")
+            else:
+                console.print("[yellow]Task completed with warnings/incomplete state.[/yellow]")
+        elif ev == "error":
+            console.print(f"[bold red]Execution Error:[/bold red] {data.get('msg')}")
 
     engine = VaderEngine(provider=prov_inst, on_event=on_event)
     engine.plan_and_execute(user_prompt)
@@ -82,6 +88,7 @@ def interactive_repl(provider: str = None, model: str = None):
     prov_inst = ProviderManager.get_provider(provider_name=provider, model_name=model)
     model_name = getattr(prov_inst, "model", config_manager.get("model"))
     prov_name = provider or config_manager.get("provider")
+    # Print banner ONCE when REPL session starts
     print_banner(model_name, prov_name)
     console.print("[dim]Type your prompt or [bold]/help[/bold] for commands. Press Ctrl+C to exit.[/dim]\n")
     
@@ -95,12 +102,18 @@ def interactive_repl(provider: str = None, model: str = None):
                 handle_slash_command(user_input)
                 continue
 
-            execute_single_prompt(user_input, provider=provider, model=model)
+            # Run task without re-printing the banner
+            try:
+                execute_single_prompt(user_input, provider=provider, model=model, show_banner=False)
+            except Exception as e:
+                console.print(f"[bold red]Error:[/bold red] {e}")
+                console.print("[dim]Vader is ready for your next prompt. Type /help for options.[/dim]")
             console.print()
-        except (KeyboardInterrupt, EOFError):
+        except KeyboardInterrupt:
+            console.print("\n[dim]Action cancelled. Type /exit to quit or continue entering prompts.[/dim]\n")
+        except EOFError:
             console.print("\n[dim]Exiting Vader. Keep vibe-coding![/dim]")
             break
-
 def handle_slash_command(cmd: str):
     parts = cmd.split()
     root_cmd = parts[0].lower()
