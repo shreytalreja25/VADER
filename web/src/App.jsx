@@ -295,12 +295,155 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '48px 24px', textAlign: 'center', color: 'var(--text-dim)', fontSize: '14px' }}>
-        <div style={{ marginBottom: '16px' }}>
-          <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>VADER (Vibe-Coder)</span> — Autonomous Agentic Development Platform
-        </div>
-        <div>
-          Licensed under MIT. Open Source on <a href="https://github.com/shreytalreja25/VADER" style={{ color: '#38bdf8' }}>GitHub</a>.
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.08)', background: 'linear-gradient(180deg, rgba(9,13,22,0) 0%, rgba(5,8,15,0.95) 100%)', padding: '48px 24px 32px 24px', marginTop: '80px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {/* Top Row: Profile & Social Pills */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '28px', marginBottom: '36px' }}>
+            {/* Left: Avatar + Bio */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+              {/* Circular Avatar with Glowing Ring */}
+              <div style={{ position: 'relative', width: '52px', height: '52px', minWidth: '52px' }}>
+                <img 
+                  src="/avatar.png" 
+                  alt="Shrey Talreja" 
+                  style={{ 
+                    width: '52px', 
+                    height: '52px', 
+                    borderRadius: '50%', 
+                    objectFit: 'cover',
+                    border: '2px solid #38bdf8',
+                    boxShadow: '0 0 20px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(56, 189, 248, 0.2)'
+                  }} 
+                />
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '18px', fontWeight: '800', color: '#f8fafc', letterSpacing: '-0.3px' }}>
+                    Shrey Talreja
+                  </span>
+                  <span style={{ 
+                    fontSize: '11px', 
+                    fontWeight: '700', 
+                    letterSpacing: '0.6px', 
+                    color: '#2dd4bf', 
+                    background: 'rgba(13, 148, 136, 0.18)', 
+                    border: '1px solid rgba(45, 212, 191, 0.35)', 
+                    padding: '2px 10px', 
+                    borderRadius: '9999px',
+                    fontFamily: "'Fira Code', monospace"
+                  }}>
+                    Architect &amp; Creator
+                  </span>
+                </div>
+                <p style={{ color: '#94a3b8', fontSize: '13px', margin: '6px 0 0 0', maxWidth: '540px', lineHeight: 1.5 }}>
+                  Building autonomous agentic infrastructure, enterprise data lakehouse governance, and deterministic financial AI pipelines.
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Social & Repo Buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              {/* GitHub Repo Pill */}
+              <a 
+                href="https://github.com/shreytalreja25/VADER" 
+                target="_blank" 
+                rel="noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(15, 23, 42, 0.85)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: '9999px',
+                  padding: '9px 18px',
+                  color: '#f8fafc',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#38bdf8'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                </svg>
+                <span>GitHub Repo</span>
+              </a>
+
+              {/* LinkedIn Pill */}
+              <a 
+                href="https://linkedin.com/in/shreytalreja25" 
+                target="_blank" 
+                rel="noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(14, 116, 144, 0.15)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  borderRadius: '9999px',
+                  padding: '9px 18px',
+                  color: '#38bdf8',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 12px rgba(56, 189, 248, 0.15)'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(14, 116, 144, 0.3)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(14, 116, 144, 0.15)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                </svg>
+                <span>LinkedIn</span>
+              </a>
+
+              {/* @shreytalreja25 Handle Pill */}
+              <a 
+                href="https://github.com/shreytalreja25" 
+                target="_blank" 
+                rel="noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  background: 'rgba(30, 41, 59, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '9999px',
+                  padding: '9px 18px',
+                  color: '#cbd5e1',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  fontFamily: "'Fira Code', monospace",
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#38bdf8'; e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.4)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#cbd5e1'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                @shreytalreja25
+              </a>
+            </div>
+          </div>
+
+          {/* Bottom Row: Copyright + Links */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', fontSize: '12px', color: '#64748b' }}>
+            <div>
+              &copy; 2026 Vader. Open Source under MIT License.
+            </div>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              <a href="#features" style={{ color: '#94a3b8', textDecoration: 'none' }}>Why Vader</a>
+              <span>&bull;</span>
+              <a href="#models" style={{ color: '#94a3b8', textDecoration: 'none' }}>Ollama &amp; Quantization</a>
+              <span>&bull;</span>
+              <a href="#architecture" style={{ color: '#94a3b8', textDecoration: 'none' }}>DAG Pipeline</a>
+              <span>&bull;</span>
+              <a href="https://github.com/shreytalreja25/VADER" target="_blank" rel="noreferrer" style={{ color: '#94a3b8', textDecoration: 'none' }}>Research Links</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
