@@ -1,0 +1,17 @@
+name: full-repo-audit
+description: Comprehensive repository health check, security scan, and code smell analysis
+steps:
+  - id: git-check
+    name: Check Working Tree Status
+    type: command
+    run: git status --short
+
+  - id: security-scan
+    name: Security & Credentials Audit
+    type: agent
+    prompt: "Perform a security scan on the repository. Check for leaked credentials, vulnerable imports, and unsafe shell invocations. List all findings."
+
+  - id: test-verification
+    name: Run Test Suite
+    type: command
+    run: pytest -q || npm test || echo 'No tests detected'

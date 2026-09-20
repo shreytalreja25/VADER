@@ -1,0 +1,12 @@
+name: ci-self-heal
+description: Automated test runner with agentic self-healing for any failing tests
+steps:
+  - id: run-tests
+    name: Execute Local Tests
+    type: command
+    run: pytest -q || npm test
+
+  - id: repair-failures
+    name: Self-Healing Failure Resolution
+    type: agent
+    prompt: "Inspect the last test execution log. Diagnose failing tests, modify affected source files to resolve all failures, and verify test passes."

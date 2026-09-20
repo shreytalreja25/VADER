@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vader-ai"
+version = "0.1.0"
+description = "Vader: Autonomous agentic development platform for vibe-coding with Ollama and quantized models"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Shrey Talreja", email = "shreytalreja@example.com" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Code Generators",
+]
+dependencies = [
+    "click>=8.1.0",
+    "rich>=13.7.0",
+    "prompt-toolkit>=3.0.40",
+    "httpx>=0.27.0",
+    "pydantic>=2.6.0",
+    "pyyaml>=6.0.1",
+    "croniter>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+vader = "vader.cli.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["vader*"]
