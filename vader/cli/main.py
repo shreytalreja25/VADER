@@ -18,7 +18,15 @@ from vader.skills.manager import skill_manager
 from vader.workflows.engine import WorkflowEngine
 from vader.cron.scheduler import cron_scheduler
 
-SUBCOMMANDS = {"setup", "doctor", "diff", "skill", "workflow", "cron", "run"}
+KNOWN_COMMANDS = {"setup", "doctor", "diff", "skill", "workflow", "cron", "code", "--help", "-h", "--version", "-v"}
+
+def preprocess_argv():
+    if len(sys.argv) > 1:
+        non_flags = [a for a in sys.argv[1:] if not a.startswith("-")]
+        if non_flags and non_flags[0] not in KNOWN_COMMANDS:
+            sys.argv.insert(1, "code")
+
+preprocess_argv()
 
 @click.group(invoke_without_command=True)
 @click.option("--version", "-v", is_flag=True, help="Show Vader version.")
@@ -32,15 +40,25 @@ def cli(ctx, version):
         sys.exit(0)
 
     if ctx.invoked_subcommand is None:
-        # Check if user provided trailing prompt args without a subcommand
-        args = sys.argv[1:]
-        if args and not args[0].startswith("-") and args[0] not in SUBCOMMANDS:
-            execute_single_prompt(" ".join(args))
-        else:
-            interactive_repl()
+        interactive_repl()
 
-def execute_single_prompt(user_prompt: str):
-    print_banner(config_manager.get("model"), config_manager.get("provider"))
+@cli.command("code")
+@click.option("--provider", "-p", default=None, help="LLM provider: ollama, quantized, openai, anthropic, deepseek, mock.")
+@click.option("--model", "-m", default=None, help="Model identifier.")
+@click.argument("prompt", nargs=-1, required=False)
+def code_cmd(provider, model, prompt):
+    """Execute a vibe-coding task or launch interactive REPL."""
+    if prompt:
+        user_prompt = " ".join(prompt)
+        execute_single_prompt(user_prompt, provider=provider, model=model)
+    else:
+        interactive_repl(provider=provider, model=model)
+
+def execute_single_prompt(user_prompt: str, provider: str = None, model: str = None):
+    prov_inst = ProviderManager.get_provider(provider_name=provider, model_name=model)
+    model_name = getattr(prov_inst, "model", config_manager.get("model"))
+    prov_name = provider or config_manager.get("provider")
+    print_banner(model_name, prov_name)
     console.print(f"[bold green]Executing task:[/bold green] {user_prompt}\n")
     
     def on_event(ev, data):
@@ -57,11 +75,14 @@ def execute_single_prompt(user_prompt: str):
         elif ev == "complete":
             console.print("[bold green]Task completed successfully![/bold green]")
 
-    engine = VaderEngine(on_event=on_event)
+    engine = VaderEngine(provider=prov_inst, on_event=on_event)
     engine.plan_and_execute(user_prompt)
 
-def interactive_repl():
-    print_banner(config_manager.get("model"), config_manager.get("provider"))
+def interactive_repl(provider: str = None, model: str = None):
+    prov_inst = ProviderManager.get_provider(provider_name=provider, model_name=model)
+    model_name = getattr(prov_inst, "model", config_manager.get("model"))
+    prov_name = provider or config_manager.get("provider")
+    print_banner(model_name, prov_name)
     console.print("[dim]Type your prompt or [bold]/help[/bold] for commands. Press Ctrl+C to exit.[/dim]\n")
     
     while True:
@@ -74,7 +95,7 @@ def interactive_repl():
                 handle_slash_command(user_input)
                 continue
 
-            execute_single_prompt(user_input)
+            execute_single_prompt(user_input, provider=provider, model=model)
             console.print()
         except (KeyboardInterrupt, EOFError):
             console.print("\n[dim]Exiting Vader. Keep vibe-coding![/dim]")

@@ -21,9 +21,9 @@ class VaderEngine:
     """
     Autonomous agent orchestration engine implementing the self-healing execution loop.
     """
-    def __init__(self, workspace_dir: Optional[str] = None, on_event: Optional[Callable[[str, Dict[str, Any]], None]] = None):
+    def __init__(self, workspace_dir: Optional[str] = None, on_event: Optional[Callable[[str, Dict[str, Any]], None]] = None, provider: Optional[Any] = None):
         self.harness = ContextHarness(workspace_dir)
-        self.provider = ProviderManager.get_provider()
+        self.provider = provider or ProviderManager.get_provider()
         self.on_event = on_event or (lambda event, payload: None)
         self.max_repairs = config_manager.get("orchestration.max_repair_iterations", 3)
 

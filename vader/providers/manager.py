@@ -3,6 +3,7 @@ from vader.providers.base import BaseProvider
 from vader.providers.ollama import OllamaProvider
 from vader.providers.quantized import QuantizedProvider
 from vader.providers.cloud import CloudProvider
+from vader.providers.mock import MockProvider
 from vader.config import config_manager
 
 class ProviderManager:
@@ -15,7 +16,9 @@ class ProviderManager:
         p_name = (provider_name or config_manager.get("provider", "ollama")).lower()
         active_model = model_name or config_manager.get("model", "qwen2.5-coder:7b")
 
-        if p_name == "ollama":
+        if p_name in ["mock", "test", "sim", "dry-run"]:
+            return MockProvider(model_name=active_model or "vader-mock-planner")
+        elif p_name == "ollama":
             return OllamaProvider(endpoint=endpoint, default_model=active_model)
         elif p_name in ["quantized", "gguf", "llamacpp"]:
             return QuantizedProvider(endpoint=endpoint, model_name=active_model)
